@@ -1,0 +1,69 @@
+services:
+  - type: web
+    name: big-jet-backend
+    env: node
+    region: oregon
+    plan: starter
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MPESA_CONSUMER_KEY
+        value: ${MPESA_CONSUMER_KEY}
+      - key: MPESA_CONSUMER_SECRET
+        value: ${MPESA_CONSUMER_SECRET}
+      - key: MPESA_SHORT_CODE
+        value: "174379"
+      - key: MPESA_PASSKEY
+        value: ${MPESA_PASSKEY}
+      - key: MPESA_ENV
+        value: sandbox
+      - key: MPESA_CALLBACK_URL
+        value: ${RENDER_EXTERNAL_URL}/api/mpesa/callback
+      - key: DB_USER
+        fromDatabase:
+          name: big-jet-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: big-jet-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: big-jet-db
+          property: database
+      - key: DB_HOST
+        fromDatabase:
+          name: big-jet-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: big-jet-db
+          property: port
+
+  - type: static_site
+    name: big-jet-frontend
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: big-jet-backend
+          property: url
+          path: /api
+
+databases:
+  - name: big-jet-db
+    engine: postgres
+    version: 14
+    region: oregon
+    plan: starter
